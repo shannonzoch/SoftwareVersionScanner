@@ -1,2 +1,12 @@
 # SoftwareVersionScanner
 Scans using a list of IP addresses and then builds a software version list SBOM
+SSH Software Inventory Collector (Native PowerShell)This project contains two PowerShell scripts used to securely collect installed software inventory from remote Windows (via PowerShell) and Linux (via rpm) machines using native ssh.exe and securely stored credentials.PrerequisitesNative SSH: Ensure the ssh.exe client is installed and available in your system's PATH environment variable (standard on modern Windows 10/11 installations).Execution Policy: You may need to set your PowerShell execution policy to allow script execution:Set-ExecutionPolicy RemoteSigned -Scope Process
+Usage GuideThe workflow consists of two main steps: Secure Credential Setup and Inventory Collection.Step 1: Secure Credential Setup (scsV1.0.0.ps1)This script creates encrypted credential files that only your Windows user account can read, keeping passwords out of clear text.VersionDateChange Summary1.0.02025-11-05Initial version.Create Credential Directory: Create a dedicated, secure directory for your credentials (e.g., C:\Scripts\Creds).Run for Each Credential: Run the script once for each of your standard login pairs, changing the file path each time. When prompted, enter the username and password for that set. Credentials must be named Cred*.xml for the inventory script to find them.# Example 1: Creating Cred1.xml
+.\scsV1.0.0.ps1 -FilePath "C:\Scripts\Creds\Cred1.xml"
+Step 2: Inventory Collection (rsiV1.0.0.ps1)This script reads your target list, attempts connection with all available credentials, executes the inventory command, and compiles the results.VersionDateChange Summary1.1.02025-11-05Implemented dynamic credential loading (Cred*.xml).1.0.02025-11-04Initial native ssh implementation.Create Target File: Create a text file (e.g., targets.txt) containing only the hostname or IP address of each target system, one per line.192.168.1.10
+linux-server-01
+win-vm-05
+Run the Script: Execute the main script, providing the paths to your targets file and the directory containing the secure credentials..\rsiV1.0.0.ps1 `
+    -TargetFilePath "C:\Scripts\targets.txt" `
+    -CredentialDirectory "C:\Scripts\Creds"
+OutputThe script generates a single CSV file named Installed_Software_Inventory.csv on your local user's Desktop with the following columns: Hostname, SoftwareName, and Version.
